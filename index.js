@@ -1,4 +1,4 @@
-var Vector2 = require('./Vector2.js');
+var Vector2 = require('gm2-vector2');
 
 /**
  * A rectangle.
