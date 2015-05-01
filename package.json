@@ -19,5 +19,8 @@
   "devDependencies": {
     "chai": "^2.3.0",
     "mocha": "^2.2.4"
+  },
+  "dependencies": {
+    "gm2-vector2": "0.0.1"
   }
 }
