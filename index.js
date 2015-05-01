@@ -3,13 +3,12 @@ var Vector2 = require('gm2-vector2');
 /**
  * A rectangle.
  * @constructor
- * @param {Number} [width=1] The width of the rectangle.
- * @param {Number} [height=1] The height of the rectangle.
- * @param {Number} [x=0] The x position of the rectangle.
- * @param {Number} [y=0] The y position of the rectangle.
- * @example var shape = new Rect(3, 3, 10, 10);
+ * @param {Number} [width=1] The starting width of the rectangle.
+ * @param {Number} [height=1] The starting height of the rectangle.
+ * @param {Vector2} [position=[0,0]] The starting position of the rectangle.
+ * @example var shape = new Rect(3,3);
  */
-var Rect = function( width, height, x, y ) {
+var Rect = function( width, height, position ) {
 
     /** The width of the rectangle. */
     this.width = width || 1;
@@ -17,20 +16,34 @@ var Rect = function( width, height, x, y ) {
     /** The height of the rectangle. */
     this.height = height || 1;
 
-    /** The x position of the rectangle. */
-    this.x = x || 0;
-
-    /** The x position of the rectangle. */
-    this.y = y || 0;
-
+    /** The position of the rectangle. */
+    this.position = position || new Vector2();
 };
 
 /**
  * @return {Rect} An exact copy of this Rect.
  */
-Rect.prototype.clone = function() {
+Rect.prototype.copy = function() {
 
-    return new Rect(this.width, this.height, this.x, this.y);
+    return new Rect(this.width, this.height, this.position.copy());
+
+};
+
+/**
+ * Alter this Rect so that it becomes an exact copy of the passed Rect.
+ * @param {Rect} rect A Rect to copy from.
+ * @return {Rect} Itself. Useful for chaining.
+ */
+Rect.prototype.set = function(rect) {
+
+    if(!rect || !(rect instanceof Rect)) { return this; }
+
+    this.width = rect.width;
+    this.height = rect.height;
+    this.position.set(rect.position);
+
+    return this;
+
 };
 
 /**
@@ -55,11 +68,13 @@ Rect.prototype.getCenter = function(v) {
  */
 Rect.prototype.setCenter = function(pos) {
 
-    this.x = pos.x - this.width / 2;
-    this.y = pos.y - this.height / 2;
+    this.position.x = pos.x - this.width / 2;
+    this.position.y = pos.y - this.height / 2;
 
     return this;
+
 };
+
 
 /**
  *
@@ -70,6 +85,7 @@ Rect.prototype.scale = function(scale) {
     this.height *= scale;
 
     return this;
+
 };
 
 /**
@@ -87,6 +103,7 @@ Rect.prototype.expand = function(scale) {
     this.setCenter(center);
 
     return this;
+
 };
 
 /**
@@ -95,12 +112,31 @@ Rect.prototype.expand = function(scale) {
  */
 Rect.prototype.contract = function(amount) {
 
-    this.x += amount;
-    this.y += amount;
+    this.position.x += amount;
+    this.position.y += amount;
     this.width -= 2 * amount;
     this.height -= 2 * amount;
+
 };
 
+/**
+ * a random point inside the Rect
+ * @return {Vector2} a random point inside in the Rect
+ */
+Rect.prototype.randomPoint = function() {
+
+    return this.position._add(new Vector2(
+        util.random() * this.width,
+        util.random() * this.height
+    ));
+
+};
+
+Rect.prototype.toString = function() {
+
+    return this.width + 'x' + this.height + '@' + this.position.toString();
+
+};
 
 /**
  * constrain this rect inside another
@@ -108,25 +144,25 @@ Rect.prototype.contract = function(amount) {
 Rect.prototype.clip = function(rect) {
 
     // left edge
-    if(this.x < rect.x) {
-        this.width += this.x - rect.x;
-        this.x = rect.x;
+    if(this.position.x < rect.position.x) {
+        this.width += this.position.x - rect.position.x;
+        this.position.x = rect.position.x;
     }
 
     // right edge
-    if(this.x + this.width >= rect.x + rect.width) {
-        this.width = rect.x + rect.width - this.x;
+    if(this.position.x + this.width >= rect.position.x + rect.width) {
+        this.width = rect.position.x + rect.width - this.position.x;
     }
 
     // top edge
-    if(this.y < rect.y) {
-        this.height += this.y - rect.y;
-        this.y = rect.y;
+    if(this.position.y < rect.position.y) {
+        this.height += this.position.y - rect.position.y;
+        this.position.y = rect.position.y;
     }
 
     // bottom edge
-    if(this.y + this.height >= rect.y + rect.height) {
-        this.height = rect.y + rect.height - this.y;
+    if(this.position.y + this.height >= rect.position.y + rect.height) {
+        this.height = rect.position.y + rect.height - this.position.y;
     }
 
     return this;
@@ -154,10 +190,10 @@ Rect.prototype.getEdges = function() {
 Rect.prototype.getVertices = function() {
 
     var vertices = [
-        new Vector2(this.x, this.y),
-        new Vector2(this.x, this.y),
-        new Vector2(this.x, this.y),
-        new Vector2(this.x, this.y)
+        this.position.copy(),
+        this.position.copy(),
+        this.position.copy(),
+        this.position.copy()
     ];
 
     vertices[1].x += this.width;
@@ -170,21 +206,19 @@ Rect.prototype.getVertices = function() {
 
 Rect.fromArray = function(arr) {
 
-    var x = 0;
-    var y = 0;
+    var pos = new Vector2();
 
     if(arr.length >= 4) {
 
-        x = parseInt(arr[2]);
-        y = parseInt(arr[3]);
+        pos.x = parseInt(arr[2]);
+        pos.y = parseInt(arr[3]);
 
     }
 
     return new Rect(
         parseInt(arr[0]),
         parseInt(arr[1]),
-        x,
-        y
+        pos
     );
 
 };
