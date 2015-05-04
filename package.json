@@ -1,6 +1,6 @@
 {
   "name": "gm2-rect",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "2D Geometry - Rectangle",
   "main": "index.js",
   "scripts": {

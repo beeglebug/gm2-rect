@@ -18,6 +18,8 @@ var Rect = function( width, height, position ) {
 
     /** The position of the rectangle. */
     this.position = position || new Vector2();
+
+    this._center;
 };
 
 /**
@@ -46,35 +48,6 @@ Rect.prototype.set = function(rect) {
 
 };
 
-/**
- * @return {Vector2} The center of the rectangle.
- */
-Rect.prototype.getCenter = function(v) {
-
-    if(!v) {
-        v = new Vector2();
-    }
-
-    v.x = this.position.x + this.width / 2;
-    v.y = this.position.y + this.height / 2;
-
-    return v;
-};
-
-/**
- * Move the Rect so that it's center is at the specified point.
- * @param {Vector2} pos The new center for the Rect.
- * @return {Rect} Itself. Useful for chaining.
- */
-Rect.prototype.setCenter = function(pos) {
-
-    this.position.x = pos.x - this.width / 2;
-    this.position.y = pos.y - this.height / 2;
-
-    return this;
-
-};
-
 
 /**
  *
@@ -96,11 +69,11 @@ Rect.prototype.scale = function(scale) {
 Rect.prototype.expand = function(scale) {
 
     // get it first to expand from center
-    var center = this.getCenter();
+    var center = this.center;
 
     this.scale(scale);
 
-    this.setCenter(center);
+    this.center.set(center);
 
     return this;
 
@@ -203,6 +176,25 @@ Rect.prototype.getVertices = function() {
 
     return vertices;
 };
+
+Object.defineProperty( Rect.prototype, 'center', {
+
+    get : function() {
+
+        // only make the vector the first time it is asked for, then cache for future requests
+        if ( !this._center ) {
+            this._center = new Vector2();
+        }
+
+        this._center.x = this.position.x + this.width / 2;
+        this._center.y = this.position.y + this.height / 2;
+
+        return this._center;
+    }
+
+});
+
+
 
 Rect.fromArray = function(arr) {
 
